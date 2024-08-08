@@ -17,24 +17,23 @@ The indexer is flexible enough to support all chains that Uniswap V3 is deployed
 - [Features](#features)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Example Queries](#example-queries)
+- [Examples](#examples)
 - [Contributing](#contributing)
 - [License](#license)
 
 ## Features
 
-- Fast indexing of smart contract events and state changes
+- Fast indexing and processing of Uniswap events
+- Superset of the [Uniswap V3 Subgraph](https://github.com/Uniswap/v3-subgraph)
 - Support for multiple blockchain networks
-- Real-time updates with websocket subscriptions
-- Flexible query API for indexed data
-- Scalable architecture for high-volume processing
+- GraphQL API for querying data
 
 ## Installation
 
 1. Clone the repository:
-   `git clone https://github.com/yourusername/smart-contract-indexer.git`
+   `git clone https://github.com/jack-landon/uniswap-v3-indexer.git`
 2. Install dependencies:
-   `cd smart-contract-indexer`
+   `cd uniswap-v3-indexer`
    `pnpm install`
 3. Run Codegen:
    `pnpm run codegen`
@@ -50,7 +49,7 @@ Envio will open up your browser to `http://localhost:8080/`, which is where you 
 
 The local password is `testing`.
 
-## Example Queries
+## Examples
 
 ### Get pools
 
