@@ -1,5 +1,10 @@
 import { BigDecimal, Bundle, Pool, Token, handlerContext } from "generated";
-import { exponentToBigDecimal, safeDiv } from "../utils/index";
+import {
+  exponentToBigDecimal,
+  getFromId,
+  getId,
+  safeDiv,
+} from "../utils/index";
 import { ONE_BD, ZERO_BD, ZERO_BI } from "./constants";
 
 export const WETH_ADDRESS = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
@@ -83,9 +88,12 @@ export async function findNativePerToken(
   stablecoinAddresses: string[],
   minimumNativeLocked: BigDecimal,
   bundle: Bundle,
+  chainId: number,
   context: handlerContext
 ): Promise<BigDecimal> {
-  if (token.id == wrappedNativeAddress) {
+  const tokenAddress = getFromId(token.id).address;
+
+  if (tokenAddress == wrappedNativeAddress) {
     return ONE_BD;
   }
   const whiteList = token.whitelistPools;
@@ -96,12 +104,12 @@ export async function findNativePerToken(
 
   // hardcoded fix for incorrect rates
   // if whitelist includes token - get the safe price
-  if (stablecoinAddresses.includes(token.id)) {
+  if (stablecoinAddresses.includes(tokenAddress)) {
     priceSoFar = safeDiv(ONE_BD, bundle.ethPriceUSD);
   } else {
     for (let i = 0; i < whiteList.length; ++i) {
       const poolAddress = whiteList[i];
-      const pool = await context.Pool.get(poolAddress);
+      const pool = await context.Pool.get(getId(poolAddress, chainId));
 
       if (pool) {
         if (pool.liquidity > ZERO_BI) {
@@ -167,27 +175,29 @@ export function getTrackedAmountUSD(
 ): BigDecimal {
   const price0USD = token0.derivedETH.times(bundle.ethPriceUSD);
   const price1USD = token1.derivedETH.times(bundle.ethPriceUSD);
+  const token0Address = getFromId(token0.id).address;
+  const token1Address = getFromId(token1.id).address;
 
   // both are whitelist tokens, return sum of both amounts
   if (
-    whitelistTokens.includes(token0.id) &&
-    whitelistTokens.includes(token1.id)
+    whitelistTokens.includes(token0Address) &&
+    whitelistTokens.includes(token1Address)
   ) {
     return tokenAmount0.times(price0USD).plus(tokenAmount1.times(price1USD));
   }
 
   // take double value of the whitelisted token amount
   if (
-    whitelistTokens.includes(token0.id) &&
-    !whitelistTokens.includes(token1.id)
+    whitelistTokens.includes(token0Address) &&
+    !whitelistTokens.includes(token1Address)
   ) {
     return tokenAmount0.times(price0USD).times(BigDecimal("2"));
   }
 
   // take double value of the whitelisted token amount
   if (
-    !whitelistTokens.includes(token0.id) &&
-    whitelistTokens.includes(token1.id)
+    !whitelistTokens.includes(token0Address) &&
+    whitelistTokens.includes(token1Address)
   ) {
     return tokenAmount1.times(price1USD).times(BigDecimal("2"));
   }

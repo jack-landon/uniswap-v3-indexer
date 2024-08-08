@@ -14,6 +14,7 @@ import {
   poolsToSkip,
 } from "./utils/constants";
 import type { publicClients } from "./utils/viem";
+import { getFromId, getId } from "./utils";
 
 UniswapV3Factory.PoolCreated.contractRegister(({ event, context }) => {
   context.addUniswapV3Pool(event.params.pool);
@@ -23,24 +24,23 @@ UniswapV3Factory.PoolCreated.handler(async ({ event, context }) => {
   const subgraphConfig = getChainConfig(event.chainId);
   const whitelistTokens = subgraphConfig.whitelistTokens;
   const tokenOverrides = subgraphConfig.tokenOverrides;
-  context.log.info(
-    `This is the Token Overrides: ${tokenOverrides.map(
-      (override) => `${override.address} - ${override.symbol}`
-    )}`
-  );
+
   const poolMappings = subgraphConfig.poolMappings;
 
   // temp fix
   if (poolsToSkip.includes(event.params.pool)) return;
 
   // load factory
-  let factory = await context.Factory.get(event.srcAddress);
+  const factoryId = getId(event.srcAddress, event.chainId);
+  let factory = await context.Factory.get(factoryId);
 
   if (!factory) {
     context.log.info(`Creating Factory`);
 
     factory = {
-      id: event.srcAddress,
+      id: factoryId,
+      address: event.srcAddress,
+      chainId: event.chainId,
       poolCount: ZERO_BI,
       totalVolumeETH: ZERO_BD,
       totalVolumeUSD: ZERO_BD,
@@ -79,10 +79,14 @@ UniswapV3Factory.PoolCreated.handler(async ({ event, context }) => {
     poolCount: factory.poolCount + ONE_BI,
   };
 
+  const poolId = getId(event.params.pool, event.chainId);
+
   let pool: Pool = {
-    id: event.params.pool,
+    id: poolId,
     token0_id: event.params.token0,
     token1_id: event.params.token1,
+    address: event.params.pool,
+    chainId: event.chainId,
     feeTier: BigInt(event.params.fee),
     createdAtTimestamp: event.block.timestamp,
     createdAtBlockNumber: event.block.number,
@@ -111,9 +115,12 @@ UniswapV3Factory.PoolCreated.handler(async ({ event, context }) => {
     tick: undefined,
   };
 
+  const token0Id = getId(event.params.token0, event.chainId);
+  const token1Id = getId(event.params.token1, event.chainId);
+
   let [token0, token1] = await Promise.all([
-    context.Token.get(event.params.token0),
-    context.Token.get(event.params.token1),
+    context.Token.get(token0Id),
+    context.Token.get(token1Id),
   ]);
 
   // fetch info if null
@@ -148,7 +155,9 @@ UniswapV3Factory.PoolCreated.handler(async ({ event, context }) => {
     }
 
     token0 = {
-      id: event.params.token0,
+      id: token0Id,
+      address: event.params.token0,
+      chainId: event.chainId,
       symbol,
       name,
       totalSupply,
@@ -198,7 +207,9 @@ UniswapV3Factory.PoolCreated.handler(async ({ event, context }) => {
     }
 
     token1 = {
-      id: event.params.token1,
+      id: token1Id,
+      address: event.params.token1,
+      chainId: event.chainId,
       symbol,
       name,
       totalSupply,
@@ -218,7 +229,7 @@ UniswapV3Factory.PoolCreated.handler(async ({ event, context }) => {
   }
 
   // update white listed pools
-  if (whitelistTokens.includes(token0.id)) {
+  if (whitelistTokens.includes(getFromId(token0.id).address)) {
     const newPools = token1.whitelistPools;
     newPools.push(pool.id);
     token1 = {
@@ -226,7 +237,7 @@ UniswapV3Factory.PoolCreated.handler(async ({ event, context }) => {
       whitelistPools: newPools,
     };
   }
-  if (whitelistTokens.includes(token1.id)) {
+  if (whitelistTokens.includes(getFromId(token1.id).address)) {
     const newPools = token0.whitelistPools;
     newPools.push(pool.id);
     token0 = {
@@ -239,8 +250,4 @@ UniswapV3Factory.PoolCreated.handler(async ({ event, context }) => {
   context.Token.set(token0);
   context.Token.set(token1);
   context.Factory.set(factory);
-
-  //   DOUBLE CHECK THIS
-  // create the tracked contract based on the template
-  // PoolTemplate.create(event.params.pool);
 });

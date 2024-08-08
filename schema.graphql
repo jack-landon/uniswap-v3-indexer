@@ -1,5 +1,7 @@
 type Factory {
-  id: ID! # factory address
+  id: ID! # factory address + "-" + chain ID
+  address: String! # factory address
+  chainId: Int! # chain ID
   poolCount: BigInt! # amount of pools created
   txCount: BigInt! # amoutn of transactions all time
   totalVolumeUSD: BigDecimal! # total volume all time in derived USD
@@ -16,12 +18,14 @@ type Factory {
 
 # stores for USD calculations
 type Bundle {
-  id: ID!
+  id: ID! # chain ID
   ethPriceUSD: BigDecimal! # price of ETH in usd
 }
 
 type Token {
-  id: ID! # token address
+  id: ID! # tokenAddress + "-" + chainId
+  address: String! # token address
+  chainId: Int! # chain ID of the token
   symbol: String! # token symbol
   name: String! # token name
   decimals: Int! # token decimals
@@ -45,7 +49,9 @@ type Token {
 }
 
 type Pool {
-  id: ID! # pool address
+  id: ID! # pool address + "-" + chainId
+  address: String! # pool address
+  chainId: Int! # chain ID of the pool
   createdAtTimestamp: Int! # creation
   createdAtBlockNumber: Int! # block pool was created at
   token0: Token! # token0
@@ -85,9 +91,10 @@ type Pool {
 }
 
 type Tick {
-  id: ID! # format: <pool address>#<tick index>
+  id: ID! # poolAddress + "#" + tickIndex + "-" + chainId
   poolAddress: String # pool address
   tickIdx: BigInt! # tick index
+  chainId: Int! # chain ID of the pool
   pool: Pool! # pointer to pool
   liquidityGross: BigInt! # total liquidity pool has as tick lower or upper
   liquidityNet: BigInt! # how much liquidity changes when tick crossed
@@ -98,7 +105,9 @@ type Tick {
 }
 
 type Transaction {
-  id: ID! # txn hash
+  id: ID! # txnHash + "-" + chainId
+  transactionHash: String! # transaction hash
+  chainId: Int! # chain ID
   blockNumber: Int! # block txn was included in
   timestamp: Int! # timestamp txn was confirmed
   gasUsed: BigInt! # gas used during txn execution
@@ -108,13 +117,13 @@ type Transaction {
   mints: [Mint!]! @derivedFrom(field: "transaction")
   burns: [Burn!]! @derivedFrom(field: "transaction")
   swaps: [Swap!]! @derivedFrom(field: "transaction")
-  flashed: [Flash!]! @derivedFrom(field: "transaction")
   collects: [Collect!]! @derivedFrom(field: "transaction")
 }
 
 type Mint {
-  id: ID! # transaction hash + "#" + index in mints Transaction array
+  id: ID! # transaction hash + "-" + chain ID + "#" + index in mints Transaction array
   transaction: Transaction! # which txn the mint was included in
+  chainId: Int! # chain ID of the pool
   timestamp: BigInt! # time of txn
   pool: Pool! # pool position is within
   token0: Token! # allow indexing by tokens
@@ -132,8 +141,9 @@ type Mint {
 }
 
 type Burn {
-  id: ID! # transaction hash + "#" + index in mints Transaction array
+  id: ID! # transaction hash + "-" + chain ID + "#" + index in mints Transaction array
   transaction: Transaction! # txn burn was included in
+  chainId: Int! # chain ID of the pool
   pool: Pool! # pool position is within
   token0: Token! # allow indexing by tokens
   token1: Token! # allow indexing by tokens
@@ -150,8 +160,9 @@ type Burn {
 }
 
 type Swap {
-  id: ID! # transaction hash + "#" + index in swaps Transaction array
+  id: ID! # transaction hash + "-" + chain ID + "#" + index in swaps Transaction array
   transaction: Transaction! # pointer to transaction
+  chainId: Int! # chain ID of the pool
   timestamp: BigInt! # timestamp of transaction
   pool: Pool! # pool swap occured within
   token0: Token! # allow indexing by tokens
@@ -168,8 +179,9 @@ type Swap {
 }
 
 type Collect {
-  id: ID! # transaction hash + "#" + index in collect Transaction array
+  id: ID! # transaction hash + "-" + chain ID + "#" + index in collect Transaction array
   transaction: Transaction! # pointer to txn
+  chainId: Int! # chain ID of the pool
   timestamp: BigInt! # timestamp of event
   pool: Pool! # pool collect occured within
   owner: Bytes # owner of position collect was performed on
@@ -181,24 +193,10 @@ type Collect {
   logIndex: Int # index within the txn
 }
 
-type Flash {
-  id: ID! # transaction hash + "-" + index in collect Transaction array
-  transaction: Transaction! # pointer to txn
-  timestamp: BigInt! # timestamp of event
-  pool: Pool! # pool collect occured within
-  sender: Bytes! # sender of the flash
-  recipient: Bytes! # recipient of the flash
-  amount0: BigDecimal! # amount of token0 flashed
-  amount1: BigDecimal! # amount of token1 flashed
-  amountUSD: BigDecimal! # derived amount based on available prices of tokens
-  amount0Paid: BigDecimal! # amount token0 paid for flash
-  amount1Paid: BigDecimal! # amount token1 paid for flash
-  logIndex: Int # index within the txn
-}
-
 # Data accumulated and condensed into day stats for all of Uniswap
 type UniswapDayData {
-  id: ID! # timestamp rounded to current day by dividing by 86400
+  id: ID! # timestamp rounded to current day by dividing by 86400 + "-" + chainId
+  chainId: Int! # chain ID of the Day
   date: Int! # timestamp rounded to current day by dividing by 86400
   volumeETH: BigDecimal! # total daily volume in Uniswap derived in terms of ETH
   volumeUSD: BigDecimal! # total daily volume in Uniswap derived in terms of USD
@@ -210,7 +208,8 @@ type UniswapDayData {
 
 # Data accumulated and condensed into day stats for each pool
 type PoolDayData {
-  id: ID! # timestamp rounded to current day by dividing by 86400
+  id: ID! # poolAddress + "-" + dayId + "-" + chainId
+  chainId: Int! # chain ID of the Day
   date: Int! # timestamp rounded to current day by dividing by 86400
   pool: Pool! # pointer to pool
   liquidity: BigInt! # in range liquidity at end of period
@@ -234,7 +233,8 @@ type PoolDayData {
 
 # hourly stats tracker for pool
 type PoolHourData {
-  id: ID! # format: <pool address>-<timestamp>
+  id: ID! # poolAddress + "-" + timestamp + "-" + chainId
+  chainId: Int! # chain ID of the hour
   periodStartUnix: Int! # unix timestamp for start of hour
   pool: Pool! # pointer to pool
   liquidity: BigInt! # in range liquidity at end of period
@@ -257,7 +257,8 @@ type PoolHourData {
 }
 
 type TokenDayData {
-  id: ID! # token address concatendated with date
+  id: ID! # tokenAddress + "-" + date + "-" + chainId
+  chainId: Int! # chain ID of the Day
   date: Int! # timestamp rounded to current day by dividing by 86400
   token: Token! # pointer to token
   volume: BigDecimal! # volume in token units
@@ -274,7 +275,8 @@ type TokenDayData {
 }
 
 type TokenHourData {
-  id: ID! # token address concatendated with date
+  id: ID! # tokenAddress + date + "-" + chainId
+  chainId: Int! # chain ID of the hour
   periodStartUnix: Int! # unix timestamp for start of hour
   token: Token! # pointer to token
   volume: BigDecimal! # volume in token units

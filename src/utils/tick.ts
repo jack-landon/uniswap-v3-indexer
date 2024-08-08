@@ -7,11 +7,13 @@ export function createTick(
   tickIdx: bigint,
   poolId: string,
   timestamp: number,
-  blockNumber: number
+  blockNumber: number,
+  chainId: number
 ): Tick {
   let tick: Tick = {
     id: tickId,
     tickIdx: tickIdx,
+    chainId,
     pool_id: poolId,
     poolAddress: poolId,
     createdAtTimestamp: timestamp,

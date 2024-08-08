@@ -3,6 +3,7 @@
 An multi-chain indexer for Uniswap V3 smart contracts.
 Built with envio by Jack Landon of [SvelteKit.io](https://sveltekit.io).
 Inspired by the [Uniswap V3 Subgraph](https://github.com/Uniswap/v3-subgraph).
+
 Supported chains:
 
 - Ethereum
@@ -16,6 +17,7 @@ The indexer is flexible enough to support all chains that Uniswap V3 is deployed
 - [Features](#features)
 - [Installation](#installation)
 - [Usage](#usage)
+- [Example Queries](#example-queries)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -47,6 +49,57 @@ This will begin indexing smart contracts on all chains.
 Envio will open up your browser to `http://localhost:8080/`, which is where you can view the data and make queries.
 
 The local password is `testing`.
+
+## Example Queries
+
+### Get pools
+
+```graphql
+query GetPoolsOnEthMainnet {
+  Pool(where: { chainId: { _eq: 1 } }) {
+    address
+    token0 {
+      address
+      symbol
+      name
+    }
+    token1 {
+      address
+      symbol
+      name
+    }
+    liquidity
+    totalValueLockedUSD
+    totalValueLockedUSDUntracked
+    volumeUSD
+    untrackedVolumeUSD
+  }
+}
+```
+
+### Get swaps
+
+```graphql
+query GetSwapsOnEthMainnet {
+  Swap(where: { chainId: { _eq: 1 } }) {
+    id
+    token0 {
+      address
+      symbol
+    }
+    token1 {
+      address
+      symbol
+    }
+    tick
+    amount0
+    amount1
+    amountUSD
+    sqrtPriceX96
+    timestamp
+  }
+}
+```
 
 ## Contributing
 

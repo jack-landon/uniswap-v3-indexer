@@ -11,6 +11,7 @@ import {
   handlerContext,
 } from "generated";
 import { ONE_BI, ZERO_BD, ZERO_BI } from "./constants";
+import { getFromId } from ".";
 
 export function getDayID(timestamp: number) {
   return Math.floor(timestamp / 86400); // rounded
@@ -36,13 +37,15 @@ export function updateUniswapDayData(
   dayID: number,
   factory: Factory,
   uniswapDayData: UniswapDayData | undefined,
+  chainId: number,
   context: handlerContext
 ): UniswapDayData {
   const dayStartTimestamp = getDayStartTimestamp(dayID);
 
   if (!uniswapDayData) {
     uniswapDayData = {
-      id: dayID.toString(),
+      id: dayID.toString().concat("-").concat(chainId.toString()),
+      chainId,
       date: dayStartTimestamp,
       volumeETH: ZERO_BD,
       volumeUSD: ZERO_BD,
@@ -70,16 +73,23 @@ export function updatePoolDayData(
   poolDayData: PoolDayData | undefined,
   feeGrowthGlobal0X128: bigint | undefined,
   feeGrowthGlobal1X128: bigint | undefined,
+  chainId: number,
   context: handlerContext
 ): PoolDayData {
   const dayStartTimestamp = getDayStartTimestamp(dayID);
-  const dayPoolID = pool.id.concat("-").concat(dayID.toString());
+  const poolAddress = getFromId(pool.id).address;
+  const dayPoolID = poolAddress
+    .concat("-")
+    .concat(dayID.toString())
+    .concat("-")
+    .concat(chainId.toString()); // poolAddress + "-" + dayId + "-" + chainId
 
   if (!poolDayData) {
     poolDayData = {
       id: dayPoolID,
       date: dayStartTimestamp,
       pool_id: pool.id,
+      chainId,
       volumeToken0: ZERO_BD,
       volumeToken1: ZERO_BD,
       volumeUSD: ZERO_BD,
@@ -154,15 +164,22 @@ export function updatePoolHourData(
   poolHourData: PoolHourData | undefined,
   feeGrowthGlobal0X128: bigint | undefined,
   feeGrowthGlobal1X128: bigint | undefined,
+  chainId: number,
   context: handlerContext
 ): PoolHourData {
   const hourIndex = getHourIndex(timestamp); // get unique hour within unix history
   const hourStartUnix = getHourStartUnix(hourIndex); // want the rounded effect
-  const hourPoolID = pool.id.concat("-").concat(hourIndex.toString());
+  const poolAddress = getFromId(pool.id).address;
+  const hourPoolID = poolAddress
+    .concat("-")
+    .concat(hourIndex.toString())
+    .concat("-")
+    .concat(chainId.toString());
 
   if (!poolHourData) {
     poolHourData = {
       id: hourPoolID,
+      chainId,
       periodStartUnix: hourStartUnix,
       pool_id: pool.id,
       // things that dont get initialized always
@@ -221,16 +238,23 @@ export function updateTokenDayData(
   bundle: Bundle,
   dayID: number,
   tokenDayData: TokenDayData | undefined,
+  chainId: number,
   context: handlerContext
 ): TokenDayData {
   const dayStartTimestamp = getDayStartTimestamp(dayID);
-  const tokenDayID = token.id.concat("-").concat(dayID.toString());
+  const tokenAddress = getFromId(token.id).address;
+  const tokenDayID = tokenAddress
+    .concat("-")
+    .concat(dayID.toString())
+    .concat("-")
+    .concat(chainId.toString());
   const tokenPrice = token.derivedETH.times(bundle.ethPriceUSD);
 
   if (!tokenDayData) {
     tokenDayData = {
       id: tokenDayID,
       date: dayStartTimestamp,
+      chainId,
       token_id: token.id,
       volume: ZERO_BD,
       volumeUSD: ZERO_BD,
@@ -278,17 +302,24 @@ export function updateTokenHourData(
   bundle: Bundle,
   timestamp: number,
   tokenHourData: TokenHourData | undefined,
+  chainId: number,
   context: handlerContext
 ): TokenHourData {
   const hourIndex = getHourIndex(timestamp); // get unique hour within unix history
   const hourStartUnix = getHourStartUnix(hourIndex); // want the rounded effect
-  const tokenHourID = token.id.concat("-").concat(hourIndex.toString());
+  const tokenAddress = getFromId(token.id).address;
+  const tokenHourID = tokenAddress
+    .concat("-")
+    .concat(hourIndex.toString())
+    .concat("-")
+    .concat(chainId.toString());
 
   const tokenPrice = token.derivedETH.times(bundle.ethPriceUSD);
 
   if (!tokenHourData) {
     tokenHourData = {
       id: tokenHourID,
+      chainId,
       periodStartUnix: hourStartUnix,
       token_id: token.id,
       volume: ZERO_BD,

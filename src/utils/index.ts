@@ -138,12 +138,18 @@ export async function loadTransaction(
   transactionHash: string,
   blockNumber: number,
   timestamp: number,
+  chainId: number,
   context: handlerContext
 ): Promise<Transaction> {
-  let transaction = await context.Transaction.get(transactionHash);
+  let transaction = await context.Transaction.get(
+    getId(transactionHash, chainId)
+  );
+
   if (!transaction) {
     transaction = {
-      id: transactionHash,
+      id: getId(transactionHash, chainId),
+      transactionHash,
+      chainId,
       blockNumber: blockNumber,
       timestamp: timestamp,
       gasUsed: ZERO_BI, // needs to be moved to transaction receipt
@@ -153,8 +159,10 @@ export async function loadTransaction(
 
   transaction = {
     ...transaction,
-    blockNumber: blockNumber,
-    timestamp: timestamp,
+    transactionHash,
+    chainId,
+    blockNumber,
+    timestamp,
     gasUsed: ZERO_BI, //needs to be moved to transaction receipt
     gasPrice: ZERO_BI,
   };
@@ -164,8 +172,8 @@ export async function loadTransaction(
   return transaction;
 }
 
-export function getId(address: Address, chainId: number): string {
-  return address.concat("-").concat(chainId.toString());
+export function getId(baseId: string, chainId: number): string {
+  return baseId.concat("-").concat(chainId.toString());
 }
 
 export function getFromId(id: string): { address: Address; chainId: string } {
