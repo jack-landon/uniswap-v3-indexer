@@ -1140,9 +1140,13 @@ UniswapV3Pool.Swap.handler(async ({ event, context }) => {
   }
 
   // hot fix for bad pricing
-  if (pool.id == "0x9663f2ca0454accad3e094448ea6f77443880454") {
+  if (
+    pool.id ==
+    "0x9663f2ca0454accad3e094448ea6f77443880454"
+      .concat("-")
+      .concat(event.chainId.toString())
+  )
     return;
-  }
 
   let [token0, token1] = await Promise.all([
     context.Token.get(pool.token0_id),

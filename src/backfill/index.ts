@@ -98,8 +98,8 @@ export async function populateEmptyPools(
         abi: poolAbi,
         functionName: "fee",
       }),
-      context.Token.get(token0Address),
-      context.Token.get(token1Address),
+      context.Token.get(getId(token0Address, chainId)),
+      context.Token.get(getId(token1Address, chainId)),
       populateToken(token0Address, tokenOverrides, context, chainId), // create token entities if needed
       populateToken(token1Address, tokenOverrides, context, chainId), // create token entities if needed
     ]);
@@ -139,7 +139,7 @@ export async function populateEmptyPools(
     };
 
     if (token0 && token1) {
-      if (whitelistTokens.includes(pool.token0_id)) {
+      if (whitelistTokens.includes(getFromId(pool.token0_id).address)) {
         const newPools = token1.whitelistPools;
         newPools.push(getFromId(pool.id).address);
         token1 = {
@@ -148,7 +148,7 @@ export async function populateEmptyPools(
         };
       }
 
-      if (whitelistTokens.includes(token1.id)) {
+      if (whitelistTokens.includes(getFromId(token1.id).address)) {
         const newPools = token0.whitelistPools;
         newPools.push(getFromId(pool.id).address);
         token0 = {
