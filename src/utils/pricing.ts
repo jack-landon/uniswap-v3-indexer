@@ -78,10 +78,6 @@ export function getNativePriceInUSD(
   }
 }
 
-/**
- * Search through to find derived Eth per token.
- * @todo update to be derived ETH (add stablecoin estimates)
- **/
 export async function findNativePerToken(
   token: Token,
   wrappedNativeAddress: string,

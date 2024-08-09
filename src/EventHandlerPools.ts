@@ -124,10 +124,6 @@ UniswapV3Pool.Burn.handler(async ({ event, context }) => {
       event.params.tickLower <= pool.tick &&
       event.params.tickUpper > pool.tick
     ) {
-      // todo: this liquidity can be calculated from the real reserves and
-      // current price instead of incrementally from every burned amount which
-      // may not be accurate: https://linear.app/uniswap/issue/DAT-336/fix-pool-liquidity
-
       pool = {
         ...pool,
         liquidity: pool.liquidity - event.params.amount,
@@ -971,9 +967,6 @@ UniswapV3Pool.Mint.handler(async ({ event, context }) => {
 
     context.Tick.set(lowerTick);
     context.Tick.set(upperTick);
-
-    // TODO: Update Tick's volume, fees, and liquidity provider count. Computing these on the tick
-    // level requires reimplementing some of the swapping code from v3-core.
 
     const poolAddress = getFromId(pool.id).address;
     const token0Address = getFromId(token0.id).address;
