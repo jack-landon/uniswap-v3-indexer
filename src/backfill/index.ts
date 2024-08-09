@@ -1,5 +1,5 @@
 import { Pool, handlerContext } from "generated";
-import { convertTokenToDecimal, getFromId } from "../utils";
+import { convertTokenToDecimal, getFromId, getId } from "../utils";
 import { ZERO_BD, ZERO_BI } from "../utils/constants";
 import { StaticTokenDefinition } from "../utils/staticTokenDefinition";
 import {
@@ -17,44 +17,54 @@ export async function populateToken(
   context: handlerContext,
   chainId: keyof typeof publicClients
 ): Promise<void> {
-  let token = await context.Token.get(tokenAddress);
-  if (token) return;
+  try {
+    let token = await context.Token.get(getId(tokenAddress, chainId));
+    if (token) return;
 
-  const symbol = await fetchTokenSymbol(tokenAddress, tokenOverrides, chainId);
-  const name = await fetchTokenName(tokenAddress, tokenOverrides, chainId);
-  const totalSupply = await fetchTokenTotalSupply(
-    tokenAddress,
-    tokenOverrides,
-    chainId
-  );
-  const decimals = await fetchTokenDecimals(
-    tokenAddress,
-    tokenOverrides,
-    chainId
-  );
+    const symbol = await fetchTokenSymbol(
+      tokenAddress,
+      tokenOverrides,
+      chainId
+    );
+    const name = await fetchTokenName(tokenAddress, tokenOverrides, chainId);
+    const totalSupply = await fetchTokenTotalSupply(
+      tokenAddress,
+      tokenOverrides,
+      chainId
+    );
+    const decimals = await fetchTokenDecimals(
+      tokenAddress,
+      tokenOverrides,
+      chainId
+    );
 
-  if (!decimals) return;
+    if (!decimals) return;
 
-  token = {
-    id: tokenAddress,
-    symbol,
-    name,
-    totalSupply,
-    decimals,
-    derivedETH: ZERO_BD,
-    volume: ZERO_BD,
-    volumeUSD: ZERO_BD,
-    feesUSD: ZERO_BD,
-    untrackedVolumeUSD: ZERO_BD,
-    totalValueLocked: ZERO_BD,
-    totalValueLockedUSD: ZERO_BD,
-    totalValueLockedUSDUntracked: ZERO_BD,
-    txCount: ZERO_BI,
-    poolCount: ZERO_BI,
-    whitelistPools: [],
-  };
+    token = {
+      id: getId(tokenAddress, chainId),
+      address: tokenAddress,
+      chainId,
+      symbol,
+      name,
+      totalSupply,
+      decimals,
+      derivedETH: ZERO_BD,
+      volume: ZERO_BD,
+      volumeUSD: ZERO_BD,
+      feesUSD: ZERO_BD,
+      untrackedVolumeUSD: ZERO_BD,
+      totalValueLocked: ZERO_BD,
+      totalValueLockedUSD: ZERO_BD,
+      totalValueLockedUSDUntracked: ZERO_BD,
+      txCount: ZERO_BI,
+      poolCount: ZERO_BI,
+      whitelistPools: [],
+    };
 
-  context.Token.set(token);
+    context.Token.set(token);
+  } catch (error) {
+    console.log(`Error in populate token ${tokenAddress}: `, error);
+  }
 }
 
 /**
@@ -95,7 +105,9 @@ export async function populateEmptyPools(
     ]);
 
     let pool: Pool = {
-      id: newAddress,
+      id: getId(newAddress, chainId),
+      address: newAddress,
+      chainId,
       createdAtBlockNumber: blockNumber,
       createdAtTimestamp: blockTimestamp,
       token0_id: token0Address,
@@ -129,7 +141,7 @@ export async function populateEmptyPools(
     if (token0 && token1) {
       if (whitelistTokens.includes(pool.token0_id)) {
         const newPools = token1.whitelistPools;
-        newPools.push(pool.id);
+        newPools.push(getFromId(pool.id).address);
         token1 = {
           ...token1,
           whitelistPools: newPools,
@@ -138,7 +150,7 @@ export async function populateEmptyPools(
 
       if (whitelistTokens.includes(token1.id)) {
         const newPools = token0.whitelistPools;
-        newPools.push(pool.id);
+        newPools.push(getFromId(pool.id).address);
         token0 = {
           ...token0,
           whitelistPools: newPools,

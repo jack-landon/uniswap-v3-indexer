@@ -264,7 +264,7 @@ export function updateTokenDayData(
       high: tokenPrice,
       low: tokenPrice,
       close: tokenPrice,
-      priceUSD: token.derivedETH.times(bundle.ethPriceUSD),
+      priceUSD: tokenPrice,
       totalValueLocked: token.totalValueLocked,
       totalValueLockedUSD: token.totalValueLockedUSD,
     };
@@ -287,7 +287,7 @@ export function updateTokenDayData(
   tokenDayData = {
     ...tokenDayData,
     close: tokenPrice,
-    priceUSD: token.derivedETH.times(bundle.ethPriceUSD),
+    priceUSD: tokenPrice,
     totalValueLocked: token.totalValueLocked,
     totalValueLockedUSD: token.totalValueLockedUSD,
   };

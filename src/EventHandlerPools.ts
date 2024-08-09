@@ -8,6 +8,7 @@ import {
 } from "generated";
 import { ETH_MAINNET_ID, ONE_BI, ZERO_BD } from "./utils/constants";
 import {
+  Address,
   convertTokenToDecimal,
   getFactoryAddress,
   getFromId,
@@ -34,8 +35,7 @@ import {
   updateUniswapDayData,
 } from "./utils/intervalUpdates";
 import { createTick } from "./utils/tick";
-import { poolAbi } from "./utils/abis";
-import { publicClients } from "./utils/viem";
+import { updateFeeGrowthGlobal } from "./utils/updateFeeGrowthGlobal";
 
 UniswapV3Pool.Burn.handler(async ({ event, context }) => {
   const factoryAddress = getFactoryAddress(event.chainId);
@@ -247,62 +247,15 @@ UniswapV3Pool.Burn.handler(async ({ event, context }) => {
     let feeGrowthGlobal1X128: bigint | undefined = undefined;
 
     if (!poolHourData) {
-      // Call for feeGrowthGlobal0X128 and feeGrowthGlobal1X128
-      const poolContract = {
-        address: event.srcAddress as `0x${string}`,
-        abi: poolAbi,
-      } as const;
-
-      // As ETH mainnet doesn't have multicall, we need to make separate calls
-      if (event.chainId === ETH_MAINNET_ID && event.block.number < 14353602) {
-        [feeGrowthGlobal0X128, feeGrowthGlobal1X128] = await Promise.all([
-          publicClients[
-            event.chainId as keyof typeof publicClients
-          ].readContract({
-            ...poolContract,
-            functionName: "feeGrowthGlobal0X128",
-          }),
-          publicClients[
-            event.chainId as keyof typeof publicClients
-          ].readContract({
-            ...poolContract,
-            functionName: "feeGrowthGlobal1X128",
-          }),
-        ]);
-      } else {
-        const results = await publicClients[
-          event.chainId as keyof typeof publicClients
-        ].multicall({
-          contracts: [
-            {
-              ...poolContract,
-              functionName: "feeGrowthGlobal0X128",
-            },
-            {
-              ...poolContract,
-              functionName: "feeGrowthGlobal1X128",
-            },
-          ],
-          blockNumber: BigInt(event.block.number),
-        });
-
-        feeGrowthGlobal0X128 = results[0].result;
-        feeGrowthGlobal1X128 = results[1].result;
-      }
-
-      if (feeGrowthGlobal0X128) {
-        pool = {
-          ...pool,
-          feeGrowthGlobal0X128,
-        };
-      }
-
-      if (feeGrowthGlobal1X128) {
-        pool = {
-          ...pool,
-          feeGrowthGlobal1X128,
-        };
-      }
+      const updatedFeeGrowth = await updateFeeGrowthGlobal(
+        event.srcAddress as Address,
+        event.chainId,
+        event.block.number,
+        pool
+      );
+      feeGrowthGlobal0X128 = updatedFeeGrowth.feeGrowthGlobal0X128;
+      feeGrowthGlobal1X128 = updatedFeeGrowth.feeGrowthGlobal1X128;
+      pool = updatedFeeGrowth.pool;
     }
 
     updateUniswapDayData(
@@ -587,62 +540,15 @@ UniswapV3Pool.Collect.handler(async ({ event, context }) => {
   let feeGrowthGlobal1X128: bigint | undefined = undefined;
 
   if (!poolHourData) {
-    // Call for feeGrowthGlobal0X128 and feeGrowthGlobal1X128
-    const poolContract = {
-      address: event.srcAddress as `0x${string}`,
-      abi: poolAbi,
-    } as const;
-
-    // As ETH mainnet doesn't have multicall, we need to make separate calls
-    if (event.chainId === ETH_MAINNET_ID && event.block.number < 14353602) {
-      [feeGrowthGlobal0X128, feeGrowthGlobal1X128] = await Promise.all([
-        publicClients[event.chainId as keyof typeof publicClients].readContract(
-          {
-            ...poolContract,
-            functionName: "feeGrowthGlobal0X128",
-          }
-        ),
-        publicClients[event.chainId as keyof typeof publicClients].readContract(
-          {
-            ...poolContract,
-            functionName: "feeGrowthGlobal1X128",
-          }
-        ),
-      ]);
-    } else {
-      const results = await publicClients[
-        event.chainId as keyof typeof publicClients
-      ].multicall({
-        contracts: [
-          {
-            ...poolContract,
-            functionName: "feeGrowthGlobal0X128",
-          },
-          {
-            ...poolContract,
-            functionName: "feeGrowthGlobal1X128",
-          },
-        ],
-        blockNumber: BigInt(event.block.number),
-      });
-
-      feeGrowthGlobal0X128 = results[0].result;
-      feeGrowthGlobal1X128 = results[1].result;
-    }
-
-    if (feeGrowthGlobal0X128) {
-      pool = {
-        ...pool,
-        feeGrowthGlobal0X128,
-      };
-    }
-
-    if (feeGrowthGlobal1X128) {
-      pool = {
-        ...pool,
-        feeGrowthGlobal1X128,
-      };
-    }
+    const updatedFeeGrowth = await updateFeeGrowthGlobal(
+      event.srcAddress as Address,
+      event.chainId,
+      event.block.number,
+      pool
+    );
+    feeGrowthGlobal0X128 = updatedFeeGrowth.feeGrowthGlobal0X128;
+    feeGrowthGlobal1X128 = updatedFeeGrowth.feeGrowthGlobal1X128;
+    pool = updatedFeeGrowth.pool;
   }
 
   updateUniswapDayData(dayID, factory, uniswapDayData, event.chainId, context);
@@ -781,62 +687,15 @@ UniswapV3Pool.Initialize.handler(async ({ event, context }) => {
   let feeGrowthGlobal1X128: bigint | undefined = undefined;
 
   if (!poolHourData) {
-    // Call for feeGrowthGlobal0X128 and feeGrowthGlobal1X128
-    const poolContract = {
-      address: event.srcAddress as `0x${string}`,
-      abi: poolAbi,
-    } as const;
-
-    // As ETH mainnet doesn't have multicall, we need to make separate calls
-    if (event.chainId === ETH_MAINNET_ID && event.block.number < 14353602) {
-      [feeGrowthGlobal0X128, feeGrowthGlobal1X128] = await Promise.all([
-        publicClients[event.chainId as keyof typeof publicClients].readContract(
-          {
-            ...poolContract,
-            functionName: "feeGrowthGlobal0X128",
-          }
-        ),
-        publicClients[event.chainId as keyof typeof publicClients].readContract(
-          {
-            ...poolContract,
-            functionName: "feeGrowthGlobal1X128",
-          }
-        ),
-      ]);
-    } else {
-      const results = await publicClients[
-        event.chainId as keyof typeof publicClients
-      ].multicall({
-        contracts: [
-          {
-            ...poolContract,
-            functionName: "feeGrowthGlobal0X128",
-          },
-          {
-            ...poolContract,
-            functionName: "feeGrowthGlobal1X128",
-          },
-        ],
-        blockNumber: BigInt(event.block.number),
-      });
-
-      feeGrowthGlobal0X128 = results[0].result;
-      feeGrowthGlobal1X128 = results[1].result;
-    }
-
-    if (feeGrowthGlobal0X128) {
-      pool = {
-        ...pool,
-        feeGrowthGlobal0X128,
-      };
-    }
-
-    if (feeGrowthGlobal1X128) {
-      pool = {
-        ...pool,
-        feeGrowthGlobal1X128,
-      };
-    }
+    const updatedFeeGrowth = await updateFeeGrowthGlobal(
+      event.srcAddress as Address,
+      event.chainId,
+      event.block.number,
+      pool
+    );
+    feeGrowthGlobal0X128 = updatedFeeGrowth.feeGrowthGlobal0X128;
+    feeGrowthGlobal1X128 = updatedFeeGrowth.feeGrowthGlobal1X128;
+    pool = updatedFeeGrowth.pool;
   }
 
   updatePoolDayData(
@@ -1177,62 +1036,15 @@ UniswapV3Pool.Mint.handler(async ({ event, context }) => {
     let feeGrowthGlobal1X128: bigint | undefined = undefined;
 
     if (!poolHourData) {
-      // Call for feeGrowthGlobal0X128 and feeGrowthGlobal1X128
-      const poolContract = {
-        address: event.srcAddress as `0x${string}`,
-        abi: poolAbi,
-      } as const;
-
-      // As ETH mainnet doesn't have multicall, we need to make separate calls
-      if (event.chainId === ETH_MAINNET_ID && event.block.number < 14353602) {
-        [feeGrowthGlobal0X128, feeGrowthGlobal1X128] = await Promise.all([
-          publicClients[
-            event.chainId as keyof typeof publicClients
-          ].readContract({
-            ...poolContract,
-            functionName: "feeGrowthGlobal0X128",
-          }),
-          publicClients[
-            event.chainId as keyof typeof publicClients
-          ].readContract({
-            ...poolContract,
-            functionName: "feeGrowthGlobal1X128",
-          }),
-        ]);
-      } else {
-        const results = await publicClients[
-          event.chainId as keyof typeof publicClients
-        ].multicall({
-          contracts: [
-            {
-              ...poolContract,
-              functionName: "feeGrowthGlobal0X128",
-            },
-            {
-              ...poolContract,
-              functionName: "feeGrowthGlobal1X128",
-            },
-          ],
-          blockNumber: BigInt(event.block.number),
-        });
-
-        feeGrowthGlobal0X128 = results[0].result;
-        feeGrowthGlobal1X128 = results[1].result;
-      }
-
-      if (feeGrowthGlobal0X128) {
-        pool = {
-          ...pool,
-          feeGrowthGlobal0X128,
-        };
-      }
-
-      if (feeGrowthGlobal1X128) {
-        pool = {
-          ...pool,
-          feeGrowthGlobal1X128,
-        };
-      }
+      const updatedFeeGrowth = await updateFeeGrowthGlobal(
+        event.srcAddress as Address,
+        event.chainId,
+        event.block.number,
+        pool
+      );
+      feeGrowthGlobal0X128 = updatedFeeGrowth.feeGrowthGlobal0X128;
+      feeGrowthGlobal1X128 = updatedFeeGrowth.feeGrowthGlobal1X128;
+      pool = updatedFeeGrowth.pool;
     }
 
     updateUniswapDayData(
@@ -1649,62 +1461,15 @@ UniswapV3Pool.Swap.handler(async ({ event, context }) => {
     let feeGrowthGlobal1X128: bigint | undefined = undefined;
 
     if (!_poolHourData) {
-      // Call for feeGrowthGlobal0X128 and feeGrowthGlobal1X128
-      const poolContract = {
-        address: event.srcAddress as `0x${string}`,
-        abi: poolAbi,
-      } as const;
-
-      // As ETH mainnet doesn't have multicall, we need to make separate calls
-      if (event.chainId === ETH_MAINNET_ID && event.block.number < 14353602) {
-        [feeGrowthGlobal0X128, feeGrowthGlobal1X128] = await Promise.all([
-          publicClients[
-            event.chainId as keyof typeof publicClients
-          ].readContract({
-            ...poolContract,
-            functionName: "feeGrowthGlobal0X128",
-          }),
-          publicClients[
-            event.chainId as keyof typeof publicClients
-          ].readContract({
-            ...poolContract,
-            functionName: "feeGrowthGlobal1X128",
-          }),
-        ]);
-      } else {
-        const results = await publicClients[
-          event.chainId as keyof typeof publicClients
-        ].multicall({
-          contracts: [
-            {
-              ...poolContract,
-              functionName: "feeGrowthGlobal0X128",
-            },
-            {
-              ...poolContract,
-              functionName: "feeGrowthGlobal1X128",
-            },
-          ],
-          blockNumber: BigInt(event.block.number),
-        });
-
-        feeGrowthGlobal0X128 = results[0].result;
-        feeGrowthGlobal1X128 = results[1].result;
-      }
-
-      if (feeGrowthGlobal0X128) {
-        pool = {
-          ...pool,
-          feeGrowthGlobal0X128,
-        };
-      }
-
-      if (feeGrowthGlobal1X128) {
-        pool = {
-          ...pool,
-          feeGrowthGlobal1X128,
-        };
-      }
+      const updatedFeeGrowth = await updateFeeGrowthGlobal(
+        event.srcAddress as Address,
+        event.chainId,
+        event.block.number,
+        pool
+      );
+      feeGrowthGlobal0X128 = updatedFeeGrowth.feeGrowthGlobal0X128;
+      feeGrowthGlobal1X128 = updatedFeeGrowth.feeGrowthGlobal1X128;
+      pool = updatedFeeGrowth.pool;
     }
 
     let uniswapDayData = updateUniswapDayData(

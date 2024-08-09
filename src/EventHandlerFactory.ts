@@ -80,11 +80,13 @@ UniswapV3Factory.PoolCreated.handler(async ({ event, context }) => {
   };
 
   const poolId = getId(event.params.pool, event.chainId);
+  const token0Id = getId(event.params.token0, event.chainId);
+  const token1Id = getId(event.params.token1, event.chainId);
 
   let pool: Pool = {
     id: poolId,
-    token0_id: event.params.token0,
-    token1_id: event.params.token1,
+    token0_id: token0Id,
+    token1_id: token1Id,
     address: event.params.pool,
     chainId: event.chainId,
     feeTier: BigInt(event.params.fee),
@@ -114,9 +116,6 @@ UniswapV3Factory.PoolCreated.handler(async ({ event, context }) => {
     collectedFeesUSD: ZERO_BD,
     tick: undefined,
   };
-
-  const token0Id = getId(event.params.token0, event.chainId);
-  const token1Id = getId(event.params.token1, event.chainId);
 
   let [token0, token1] = await Promise.all([
     context.Token.get(token0Id),
@@ -231,7 +230,7 @@ UniswapV3Factory.PoolCreated.handler(async ({ event, context }) => {
   // update white listed pools
   if (whitelistTokens.includes(getFromId(token0.id).address)) {
     const newPools = token1.whitelistPools;
-    newPools.push(pool.id);
+    newPools.push(getFromId(pool.id).address);
     token1 = {
       ...token1,
       whitelistPools: newPools,
@@ -239,7 +238,7 @@ UniswapV3Factory.PoolCreated.handler(async ({ event, context }) => {
   }
   if (whitelistTokens.includes(getFromId(token1.id).address)) {
     const newPools = token0.whitelistPools;
-    newPools.push(pool.id);
+    newPools.push(getFromId(pool.id).address);
     token0 = {
       ...token0,
       whitelistPools: newPools,

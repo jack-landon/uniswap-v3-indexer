@@ -10,7 +10,7 @@ import {
 import { ONE_BD, ZERO_BD, ZERO_BI } from "../utils/constants";
 import { getChainConfig } from "./chains";
 
-type Address = `0x${string}`;
+export type Address = `0x${string}`;
 
 export function getFactoryAddress(chainId: number) {
   return getChainConfig(chainId).factoryAddress;
