@@ -6,17 +6,19 @@ import {
   fetchTokenSymbol,
   fetchTokenTotalSupply,
 } from "./utils/token";
-import {
-  ADDRESS_ZERO,
-  ONE_BI,
-  ZERO_BD,
-  ZERO_BI,
-  poolsToSkip,
-} from "./utils/constants";
+import { ADDRESS_ZERO, ONE_BI, ZERO_BD, ZERO_BI } from "./utils/constants";
 import type { publicClients } from "./utils/viem";
-import { getFromId, getId } from "./utils";
+import { Address, getFromId, getId } from "./utils";
 
 UniswapV3Factory.PoolCreated.contractRegister(({ event, context }) => {
+  const subgraphConfig = getChainConfig(event.chainId);
+  if (
+    subgraphConfig.poolsToSkip.includes(event.params.pool) ||
+    subgraphConfig.tokensToSkip.includes(event.params.token0 as Address) ||
+    subgraphConfig.tokensToSkip.includes(event.params.token1 as Address)
+  )
+    return;
+
   context.addUniswapV3Pool(event.params.pool);
 });
 
@@ -24,8 +26,6 @@ UniswapV3Factory.PoolCreated.handler(async ({ event, context }) => {
   const subgraphConfig = getChainConfig(event.chainId);
   const whitelistTokens = subgraphConfig.whitelistTokens;
   const tokenOverrides = subgraphConfig.tokenOverrides;
-
-  if (poolsToSkip.includes(event.params.pool)) return;
 
   const factoryId = getId(event.srcAddress, event.chainId);
   let factory = await context.Factory.get(factoryId);
@@ -132,8 +132,10 @@ UniswapV3Factory.PoolCreated.handler(async ({ event, context }) => {
     ]);
 
     // bail if we couldn't figure out the decimals
-    if (!decimals) {
-      context.log.debug("No Decimal for token0");
+    if (decimals == null) {
+      context.log.debug(
+        `No Decimal for token0: ${event.params.token0}-${event.chainId}`
+      );
       return;
     }
 
@@ -185,8 +187,10 @@ UniswapV3Factory.PoolCreated.handler(async ({ event, context }) => {
     ]);
 
     // bail if we couldn't figure out the decimals
-    if (!decimals) {
-      context.log.debug("No Decimal for token1");
+    if (decimals == null) {
+      context.log.debug(
+        `No Decimal for token1: ${event.params.token1}-${event.chainId}`
+      );
       return;
     }
 

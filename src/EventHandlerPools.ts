@@ -64,15 +64,17 @@ UniswapV3Pool.Burn.handler(async ({ event, context }) => {
   ]);
 
   if (!bundle) {
-    return context.log.error(`Bundle not found for chain ${event.chainId}`);
+    return context.log.info(`Bundle not found for chain ${event.chainId}`);
   }
 
   if (!pool) {
-    return context.log.error(`Pool not found for chain ${event.chainId}`);
+    return context.log.info(
+      `Pool not found for chain ${event.chainId}: ${event.srcAddress}`
+    );
   }
 
   if (!factory) {
-    return context.log.error(`Factory not found for chain ${event.chainId}`);
+    return context.log.info(`Factory not found for chain ${event.chainId}`);
   }
 
   let [token0, token1] = await Promise.all([
@@ -344,7 +346,7 @@ UniswapV3Pool.Collect.handler(async ({ event, context }) => {
   ]);
 
   if (!bundle) {
-    return context.log.error(`Bundle not found for chain ${event.chainId}`);
+    return context.log.info(`Bundle not found for chain ${event.chainId}`);
   }
 
   if (!pool) {
@@ -352,7 +354,7 @@ UniswapV3Pool.Collect.handler(async ({ event, context }) => {
   }
 
   if (!factory) {
-    return context.log.error(`Factory not found for chain ${event.chainId}`);
+    return context.log.info(`Factory not found for chain ${event.chainId}`);
   }
 
   let [token0, token1] = await Promise.all([
@@ -631,7 +633,9 @@ UniswapV3Pool.Initialize.handler(async ({ event, context }) => {
   ]);
 
   if (!pool) {
-    return context.log.error(`Pool not found for chain ${event.chainId}`);
+    return context.log.info(
+      `Pool not found for chain ${event.chainId}: ${event.srcAddress}`
+    );
   }
 
   pool = {
@@ -643,7 +647,7 @@ UniswapV3Pool.Initialize.handler(async ({ event, context }) => {
   context.Pool.set(pool);
 
   if (!bundle) {
-    return context.log.error(`Bundle not found for chain ${event.chainId}`);
+    return context.log.info(`Bundle not found for chain ${event.chainId}`);
   }
 
   bundle = {
@@ -787,15 +791,17 @@ UniswapV3Pool.Mint.handler(async ({ event, context }) => {
     ]);
 
   if (!bundle) {
-    return context.log.error(`Bundle not found for chain ${event.chainId}`);
+    return context.log.info(`Bundle not found for chain ${event.chainId}`);
   }
 
   if (!pool) {
-    return context.log.error(`Pool not found for chain ${event.chainId}`);
+    return context.log.info(
+      `Pool not found for chain ${event.chainId}: ${event.srcAddress}`
+    );
   }
 
   if (!factory) {
-    return context.log.error(`Factory not found for chain ${event.chainId}`);
+    return context.log.info(`Factory not found for chain ${event.chainId}`);
   }
 
   let [token0, token1] = await Promise.all([
@@ -1129,15 +1135,17 @@ UniswapV3Pool.Swap.handler(async ({ event, context }) => {
   ]);
 
   if (!bundle) {
-    return context.log.error(`Bundle not found for chain ${event.chainId}`);
+    return context.log.info(`Bundle not found for chain ${event.chainId}`);
   }
 
   if (!factory) {
-    return context.log.error(`Factory not found for chain ${event.chainId}`);
+    return context.log.info(`Factory not found for chain ${event.chainId}`);
   }
 
   if (!pool) {
-    return context.log.error(`Pool not found for chain ${event.chainId}`);
+    return context.log.info(
+      `Pool not found for chain ${event.chainId}: ${event.srcAddress}`
+    );
   }
 
   // hot fix for bad pricing (LUSD/WETH)

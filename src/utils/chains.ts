@@ -15,6 +15,7 @@ import {
   MATIC_MAINNET_ID,
   OPTIMISM_MAINNET_ID,
 } from "./constants";
+import { Address } from ".";
 
 export enum ChainId {
   ARBITRUM_ONE = 42161,
@@ -68,6 +69,9 @@ export type SubgraphConfig = {
 
   // initialize this list of pools and token addresses on factory creation. for new chains this is typically empty.
   poolMappings: Array<`0x${string}`[]>;
+
+  // tokens to skip
+  tokensToSkip: Address[];
 };
 
 export function getChainConfig(chainId: number): SubgraphConfig {
@@ -107,6 +111,7 @@ export function getChainConfig(chainId: number): SubgraphConfig {
       ],
       poolsToSkip: [],
       poolMappings: [],
+      tokensToSkip: ["0xC36442b4a4522E871399CD717aBDD847Ab11FE88"],
     };
   } else if (chainId == AVALANCHE_MAINNET_ID) {
     return {
@@ -137,6 +142,7 @@ export function getChainConfig(chainId: number): SubgraphConfig {
       tokenOverrides: [],
       poolsToSkip: [],
       poolMappings: [],
+      tokensToSkip: [],
     };
   } else if (chainId == BASE_MAINNET_ID) {
     return {
@@ -156,6 +162,7 @@ export function getChainConfig(chainId: number): SubgraphConfig {
       tokenOverrides: STATIC_TOKEN_DEFINITIONS[BASE_MAINNET_ID],
       poolsToSkip: [],
       poolMappings: [],
+      tokensToSkip: ["0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1"],
     };
   } else if (chainId == BLAST_MAINNET_ID) {
     return {
@@ -175,6 +182,7 @@ export function getChainConfig(chainId: number): SubgraphConfig {
       tokenOverrides: [],
       poolsToSkip: [],
       poolMappings: [],
+      tokensToSkip: [],
     };
   } else if (chainId == BSC_MAINNET_ID) {
     return {
@@ -196,6 +204,7 @@ export function getChainConfig(chainId: number): SubgraphConfig {
       tokenOverrides: [],
       poolsToSkip: [],
       poolMappings: [],
+      tokensToSkip: [],
     };
   } else if (chainId == CELO_MAINNET_ID) {
     return {
@@ -225,6 +234,7 @@ export function getChainConfig(chainId: number): SubgraphConfig {
       tokenOverrides: [],
       poolsToSkip: [],
       poolMappings: [],
+      tokensToSkip: [],
     };
   } else if (chainId == ETH_MAINNET_ID) {
     return {
@@ -267,6 +277,7 @@ export function getChainConfig(chainId: number): SubgraphConfig {
       tokenOverrides: STATIC_TOKEN_DEFINITIONS[ETH_MAINNET_ID],
       poolsToSkip: ["0x8fe8d9bb8eeba3ed688069c3d6b556c9ca258248"],
       poolMappings: [],
+      tokensToSkip: ["0xC36442b4a4522E871399CD717aBDD847Ab11FE88"],
     };
   } else if (chainId == MATIC_MAINNET_ID) {
     return {
@@ -289,6 +300,7 @@ export function getChainConfig(chainId: number): SubgraphConfig {
       tokenOverrides: [],
       poolsToSkip: [],
       poolMappings: [],
+      tokensToSkip: [],
     };
   } else if (chainId == OPTIMISM_MAINNET_ID) {
     return {
@@ -328,6 +340,7 @@ export function getChainConfig(chainId: number): SubgraphConfig {
         "0x1ffd370f9d01f75de2cc701956886acec9749e80",
       ],
       poolMappings: OPTIMISM_POOL_MAPPINGS,
+      tokensToSkip: [],
     };
   } else {
     throw new Error("Unsupported Network");

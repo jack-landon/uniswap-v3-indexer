@@ -38,7 +38,7 @@ export async function populateToken(
       chainId
     );
 
-    if (!decimals) return;
+    if (decimals == null) return;
 
     token = {
       id: getId(tokenAddress, chainId),

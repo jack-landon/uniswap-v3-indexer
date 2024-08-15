@@ -98,14 +98,17 @@ export async function fetchTokenDecimals(
   if (!isAddress(address)) return null;
 
   try {
-    const decimals = (await publicClients[chainId].readContract({
+    const decimals = await publicClients[chainId].readContract({
       address,
       abi: erc20Abi,
       functionName: "decimals",
-    })) as unknown as bigint;
+    });
 
-    return parseInt(decimals.toString()) ?? null;
+    if (!decimals && decimals !== 0) return null;
+
+    return decimals;
   } catch (error) {
+    console.log(`Problem getting decimals for ${address}`);
     return null;
   }
 }

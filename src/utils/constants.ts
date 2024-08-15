@@ -17,5 +17,3 @@ export const BSC_MAINNET_ID = 56;
 export const CELO_MAINNET_ID = 42220;
 export const MATIC_MAINNET_ID = 137;
 export const OPTIMISM_MAINNET_ID = 10;
-
-export const poolsToSkip: string[] = [];
