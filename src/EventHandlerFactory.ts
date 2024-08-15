@@ -25,12 +25,8 @@ UniswapV3Factory.PoolCreated.handler(async ({ event, context }) => {
   const whitelistTokens = subgraphConfig.whitelistTokens;
   const tokenOverrides = subgraphConfig.tokenOverrides;
 
-  const poolMappings = subgraphConfig.poolMappings;
-
-  // temp fix
   if (poolsToSkip.includes(event.params.pool)) return;
 
-  // load factory
   const factoryId = getId(event.srcAddress, event.chainId);
   let factory = await context.Factory.get(factoryId);
 
@@ -60,18 +56,6 @@ UniswapV3Factory.PoolCreated.handler(async ({ event, context }) => {
       id: event.chainId.toString(),
       ethPriceUSD: ZERO_BD,
     });
-
-    // if (poolMappings.length > 0) {
-    //   await populateEmptyPools(
-    //     event.blockNumber,
-    //     event.blockTimestamp,
-    //     poolMappings,
-    //     whitelistTokens,
-    //     tokenOverrides,
-    //     context,
-    //     event.chainId as keyof typeof publicClients
-    //   ); // Do this if you need to backfill - This is used for generating optimism pre-regenesis data.
-    // }
   }
 
   factory = {
@@ -122,7 +106,7 @@ UniswapV3Factory.PoolCreated.handler(async ({ event, context }) => {
     context.Token.get(token1Id),
   ]);
 
-  // fetch info if null
+  // Add token0 info if it doesn't exist
   if (!token0) {
     const [decimals, symbol, name, totalSupply] = await Promise.all([
       fetchTokenDecimals(
@@ -175,6 +159,7 @@ UniswapV3Factory.PoolCreated.handler(async ({ event, context }) => {
     };
   }
 
+  // Add token1 info if it doesn't exist
   if (!token1) {
     const [decimals, symbol, name, totalSupply] = await Promise.all([
       fetchTokenDecimals(
@@ -245,6 +230,7 @@ UniswapV3Factory.PoolCreated.handler(async ({ event, context }) => {
     };
   }
 
+  // Save all changes
   context.Pool.set(pool);
   context.Token.set(token0);
   context.Token.set(token1);

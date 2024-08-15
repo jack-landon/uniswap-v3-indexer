@@ -6,7 +6,7 @@ import {
   Swap,
   UniswapV3Pool,
 } from "generated";
-import { ETH_MAINNET_ID, ONE_BI, ZERO_BD } from "./utils/constants";
+import { ONE_BI, ZERO_BD } from "./utils/constants";
 import {
   Address,
   convertTokenToDecimal,
@@ -25,9 +25,7 @@ import {
 import { getChainConfig } from "./utils/chains";
 import {
   getDayID,
-  getDayStartTimestamp,
   getHourIndex,
-  getHourStartUnix,
   updatePoolDayData,
   updatePoolHourData,
   updateTokenDayData,
@@ -186,6 +184,7 @@ UniswapV3Pool.Burn.handler(async ({ event, context }) => {
     const token0Address = getFromId(token0.id).address;
     const token1Address = getFromId(token1.id).address;
 
+    // Get ID's to feed into interval updates
     const dayID = getDayID(event.block.timestamp);
     const dayPoolID = poolAddress
       .concat("-")
@@ -242,6 +241,7 @@ UniswapV3Pool.Burn.handler(async ({ event, context }) => {
     let feeGrowthGlobal0X128: bigint | undefined = undefined;
     let feeGrowthGlobal1X128: bigint | undefined = undefined;
 
+    // New hour -> add the fee growth
     if (!poolHourData) {
       const updatedFeeGrowth = await updateFeeGrowthGlobal(
         event.srcAddress as Address,
@@ -312,6 +312,7 @@ UniswapV3Pool.Burn.handler(async ({ event, context }) => {
       context
     );
 
+    // Save Changes
     context.Token.set(token0);
     context.Token.set(token1);
     context.Pool.set(pool);
@@ -1122,9 +1123,9 @@ UniswapV3Pool.Swap.handler(async ({ event, context }) => {
   const whitelistTokens = subgraphConfig.whitelistTokens;
 
   let [bundle, pool, factory] = await Promise.all([
-    context.Bundle.get(event.chainId.toString())!,
-    context.Pool.get(poolId)!,
-    context.Factory.get(factoryId)!,
+    context.Bundle.get(event.chainId.toString()),
+    context.Pool.get(poolId),
+    context.Factory.get(factoryId),
   ]);
 
   if (!bundle) {
@@ -1139,7 +1140,7 @@ UniswapV3Pool.Swap.handler(async ({ event, context }) => {
     return context.log.error(`Pool not found for chain ${event.chainId}`);
   }
 
-  // hot fix for bad pricing
+  // hot fix for bad pricing (LUSD/WETH)
   if (
     pool.id ==
     "0x9663f2ca0454accad3e094448ea6f77443880454"
@@ -1400,7 +1401,7 @@ UniswapV3Pool.Swap.handler(async ({ event, context }) => {
     const token0Address = getFromId(token0.id).address;
     const token1Address = getFromId(token1.id).address;
 
-    // interval data
+    // Get ID's for interval updates
     const dayID = getDayID(event.block.timestamp);
     const dayPoolID = poolAddress
       .concat("-")
@@ -1454,6 +1455,7 @@ UniswapV3Pool.Swap.handler(async ({ event, context }) => {
       context.TokenHourData.get(token1HourID),
     ]);
 
+    // Update feeGrowth
     let feeGrowthGlobal0X128: bigint | undefined = undefined;
     let feeGrowthGlobal1X128: bigint | undefined = undefined;
 
@@ -1567,14 +1569,9 @@ UniswapV3Pool.Swap.handler(async ({ event, context }) => {
       volumeUSD: token0HourData.volumeUSD.plus(amountTotalUSDTracked),
       untrackedVolumeUSD: token0HourData.untrackedVolumeUSD.plus(
         amountTotalUSDUntracked
-      ), // Check this isnt supposed to be amountTotalUSDTracked as is below
+      ),
       feesUSD: token0HourData.feesUSD.plus(feesUSD),
     };
-
-    // WAS THIS A BUG???? ITS ADDING USDTRACK to the untrackedVolumeUSD
-    // token0HourData.untrackedVolumeUSD = token0HourData.untrackedVolumeUSD.plus(
-    //   amountTotalUSDTracked
-    // );
 
     token1DayData = {
       ...token1DayData,
@@ -1582,14 +1579,9 @@ UniswapV3Pool.Swap.handler(async ({ event, context }) => {
       volumeUSD: token1DayData.volumeUSD.plus(amountTotalUSDTracked),
       untrackedVolumeUSD: token1DayData.untrackedVolumeUSD.plus(
         amountTotalUSDUntracked
-      ), // Check this isnt supposed to be amountTotalUSDTracked as is below
+      ),
       feesUSD: token1DayData.feesUSD.plus(feesUSD),
     };
-
-    // WAS THIS A BUG???? ITS ADDING USDTRACK to the untrackedVolumeUSD
-    // token1DayData.untrackedVolumeUSD = token1DayData.untrackedVolumeUSD.plus(
-    //   amountTotalUSDTracked
-    // );
 
     token1HourData = {
       ...token1HourData,
@@ -1597,15 +1589,11 @@ UniswapV3Pool.Swap.handler(async ({ event, context }) => {
       volumeUSD: token1HourData.volumeUSD.plus(amountTotalUSDTracked),
       untrackedVolumeUSD: token1HourData.untrackedVolumeUSD.plus(
         amountTotalUSDUntracked
-      ), // Check this isnt supposed to be amountTotalUSDTracked as is below
+      ),
       feesUSD: token1HourData.feesUSD.plus(feesUSD),
     };
 
-    // WAS THIS A BUG???? ITS ADDING USDTRACK to the untrackedVolumeUSD
-    // token1HourData.untrackedVolumeUSD = token1HourData.untrackedVolumeUSD.plus(
-    //   amountTotalUSDTracked
-    // );
-
+    // Save Changes
     context.Swap.set(swap);
     context.TokenDayData.set(token0DayData);
     context.TokenDayData.set(token1DayData);
