@@ -42,17 +42,19 @@ The local password is `testing`.
 
 ## Queries
 
-This section will teach you how to query the indexer by fetching data points like :
+This section will teach you how to query the indexer by fetching data points related to:
 
-- [collected fees for a position](#general-position-data)
-- [current liquidity](#pool-data) of a pool
-- [volume on a certain day](#historical-global-data)
+- Global Factory Data,
+- Popular liquidity pools,
+- Token Data,
+- Periodic Volume,
+- Multi-chain aggregations
 
-and much more. Below are some example queries.
+and much more.
 
 ### A note about ID's
 
-In order to make this indexer multi-chain, the ID of particular entities like pools, tokens, pools factories and positions are suffixed with ("-") and the chain ID (<ENTITY_ADDRESS>-<CHAIN_ID>).
+In order to make this indexer multi-chain, the ID of particular entities like pools, tokens, pools factories and positions are suffixed with ("-") and the chain ID **(`<ENTITY_ADDRESS>-<CHAIN_ID>`)**.
 
 For example, the ID of a pool on Ethereum Mainnet (ID: 1) would be `0x12...6789f-1`.
 
@@ -354,7 +356,7 @@ Input the the token contract address to fetch token data. Any token that exists 
 
 This queries the decimals, symbol, name, pool count, and volume in USD for the UNI token. Reference the full [token schema](https://github.com/jack-landon/uniswap-v3-indexer/blob/086115c374e2c724c12bbb67be975daf83286d89/schema.graphql#L25) for all possible fields you can query.
 
-```
+```graphql
 query GetUSDCEthMainnet {
   Token_by_pk(id: "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984-1") {
     address
@@ -625,6 +627,36 @@ query GetLast6HoursOfUniTokenOnEthMainnet {
 ```
 
 Visit the [`TokenHourData`](https://github.com/jack-landon/uniswap-v3-indexer/blob/086115c374e2c724c12bbb67be975daf83286d89/schema.graphql#L277) schema for all the possible fields.
+
+## Multi-Chain Queries
+
+Since the indexer is multi-chain, you can aggregate and query data.
+
+Below are a few examples of how to get useful insights across multiple chains.
+
+### Most liquid pools across supported chains
+
+Retrieve the top 1,000 most liquid pools. This can be ordered by other properties like `txCount`, `volumeUSD`, `feesUSD` and any other property of the [`Pool` schema](https://github.com/jack-landon/uniswap-v3-indexer/blob/086115c374e2c724c12bbb67be975daf83286d89/schema.graphql#L51).
+
+```graphql
+query GetHighestLiquidityPoolsCrossChain {
+  Pool(limit: 1000, order_by: { totalValueLockedUSD: desc }) {
+    address
+    liquidity
+    totalValueLockedUSD
+    token0 {
+      address
+      symbol
+    }
+    token1 {
+      address
+      symbol
+    }
+  }
+}
+```
+
+###
 
 ## License
 
