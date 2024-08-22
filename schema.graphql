@@ -29,7 +29,7 @@ type Token {
   symbol: String! # token symbol
   name: String! # token name
   decimals: Int! # token decimals
-  totalSupply: BigInt! # token total supply
+  # totalSupply: BigInt! # token total supply
   volume: BigDecimal! # volume in token units
   volumeUSD: BigDecimal! # volume in derived USD
   untrackedVolumeUSD: BigDecimal! # volume in USD even on pools with less reliable USD values

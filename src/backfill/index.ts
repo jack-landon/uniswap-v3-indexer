@@ -6,7 +6,7 @@ import {
   fetchTokenDecimals,
   fetchTokenName,
   fetchTokenSymbol,
-  fetchTokenTotalSupply,
+  // fetchTokenTotalSupply,
 } from "../utils/token";
 import { publicClients } from "../utils/viem";
 import { erc20Abi, poolAbi } from "../utils/abis";
@@ -27,11 +27,11 @@ export async function populateToken(
       chainId
     );
     const name = await fetchTokenName(tokenAddress, tokenOverrides, chainId);
-    const totalSupply = await fetchTokenTotalSupply(
-      tokenAddress,
-      tokenOverrides,
-      chainId
-    );
+    // const totalSupply = await fetchTokenTotalSupply(
+    //   tokenAddress,
+    //   tokenOverrides,
+    //   chainId
+    // );
     const decimals = await fetchTokenDecimals(
       tokenAddress,
       tokenOverrides,
@@ -46,7 +46,7 @@ export async function populateToken(
       chainId,
       symbol,
       name,
-      totalSupply,
+      // totalSupply,
       decimals,
       derivedETH: ZERO_BD,
       volume: ZERO_BD,

@@ -4,7 +4,7 @@ import {
   fetchTokenDecimals,
   fetchTokenName,
   fetchTokenSymbol,
-  fetchTokenTotalSupply,
+  // fetchTokenTotalSupply,
 } from "./utils/token";
 import { ADDRESS_ZERO, ONE_BI, ZERO_BD, ZERO_BI } from "./utils/constants";
 import type { publicClients } from "./utils/viem";
@@ -108,7 +108,7 @@ UniswapV3Factory.PoolCreated.handler(async ({ event, context }) => {
 
   // Add token0 info if it doesn't exist
   if (!token0) {
-    const [decimals, symbol, name, totalSupply] = await Promise.all([
+    const [decimals, symbol, name] = await Promise.all([
       fetchTokenDecimals(
         event.params.token0,
         tokenOverrides,
@@ -124,11 +124,11 @@ UniswapV3Factory.PoolCreated.handler(async ({ event, context }) => {
         tokenOverrides,
         event.chainId as keyof typeof publicClients
       ),
-      fetchTokenTotalSupply(
-        event.params.token0,
-        tokenOverrides,
-        event.chainId as keyof typeof publicClients
-      ),
+      // fetchTokenTotalSupply(
+      //   event.params.token0,
+      //   tokenOverrides,
+      //   event.chainId as keyof typeof publicClients
+      // ),
     ]);
 
     // bail if we couldn't figure out the decimals
@@ -145,7 +145,7 @@ UniswapV3Factory.PoolCreated.handler(async ({ event, context }) => {
       chainId: event.chainId,
       symbol,
       name,
-      totalSupply,
+      // totalSupply,
       decimals,
       derivedETH: ZERO_BD,
       volume: ZERO_BD,
@@ -163,7 +163,7 @@ UniswapV3Factory.PoolCreated.handler(async ({ event, context }) => {
 
   // Add token1 info if it doesn't exist
   if (!token1) {
-    const [decimals, symbol, name, totalSupply] = await Promise.all([
+    const [decimals, symbol, name] = await Promise.all([
       fetchTokenDecimals(
         event.params.token1,
         tokenOverrides,
@@ -179,11 +179,11 @@ UniswapV3Factory.PoolCreated.handler(async ({ event, context }) => {
         tokenOverrides,
         event.chainId as keyof typeof publicClients
       ),
-      fetchTokenTotalSupply(
-        event.params.token1,
-        tokenOverrides,
-        event.chainId as keyof typeof publicClients
-      ),
+      // fetchTokenTotalSupply(
+      //   event.params.token1,
+      //   tokenOverrides,
+      //   event.chainId as keyof typeof publicClients
+      // ),
     ]);
 
     // bail if we couldn't figure out the decimals
@@ -200,7 +200,7 @@ UniswapV3Factory.PoolCreated.handler(async ({ event, context }) => {
       chainId: event.chainId,
       symbol,
       name,
-      totalSupply,
+      // totalSupply,
       decimals,
       derivedETH: ZERO_BD,
       volume: ZERO_BD,
