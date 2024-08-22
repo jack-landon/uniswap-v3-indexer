@@ -95,20 +95,7 @@ export function getChainConfig(chainId: number): SubgraphConfig {
         "0xda10009cbd5d07dd0cecc66161fc93d7c9000da1", // DAI
         "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9", // USDT
       ],
-      tokenOverrides: [
-        {
-          address: "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
-          symbol: "WETH",
-          name: "Wrapped Ethereum",
-          decimals: 18,
-        },
-        {
-          address: "0xff970a61a04b1ca14834a43f5de4533ebddb5cc8",
-          symbol: "USDC",
-          name: "USD Coin",
-          decimals: 6,
-        },
-      ],
+      tokenOverrides: STATIC_TOKEN_DEFINITIONS[ARBITRUM_MAINNET_ID],
       poolsToSkip: [],
       poolMappings: [],
       tokensToSkip: ["0xC36442b4a4522E871399CD717aBDD847Ab11FE88"],
