@@ -33,7 +33,7 @@ import {
   updateUniswapDayData,
 } from "./utils/intervalUpdates";
 import { createTick } from "./utils/tick";
-import { updateFeeGrowthGlobal } from "./utils/updateFeeGrowthGlobal";
+// import { updateFeeGrowthGlobal } from "./utils/updateFeeGrowthGlobal";
 
 UniswapV3Pool.Burn.handler(async ({ event, context }) => {
   const factoryAddress = getFactoryAddress(event.chainId);
@@ -240,21 +240,21 @@ UniswapV3Pool.Burn.handler(async ({ event, context }) => {
       context.TokenHourData.get(token1HourID),
     ]);
 
-    let feeGrowthGlobal0X128: bigint | undefined = undefined;
-    let feeGrowthGlobal1X128: bigint | undefined = undefined;
+    // let feeGrowthGlobal0X128: bigint | undefined = undefined;
+    // let feeGrowthGlobal1X128: bigint | undefined = undefined;
 
     // New hour -> add the fee growth
-    if (!poolHourData) {
-      const updatedFeeGrowth = await updateFeeGrowthGlobal(
-        event.srcAddress as Address,
-        event.chainId,
-        event.block.number,
-        pool
-      );
-      feeGrowthGlobal0X128 = updatedFeeGrowth.feeGrowthGlobal0X128;
-      feeGrowthGlobal1X128 = updatedFeeGrowth.feeGrowthGlobal1X128;
-      pool = updatedFeeGrowth.pool;
-    }
+    // if (!poolHourData) {
+    //   const updatedFeeGrowth = await updateFeeGrowthGlobal(
+    //     event.srcAddress as Address,
+    //     event.chainId,
+    //     event.block.number,
+    //     pool
+    //   );
+    //   feeGrowthGlobal0X128 = updatedFeeGrowth.feeGrowthGlobal0X128;
+    //   feeGrowthGlobal1X128 = updatedFeeGrowth.feeGrowthGlobal1X128;
+    //   pool = updatedFeeGrowth.pool;
+    // }
 
     updateUniswapDayData(
       dayID,
@@ -267,8 +267,8 @@ UniswapV3Pool.Burn.handler(async ({ event, context }) => {
       dayID,
       pool,
       poolDayData,
-      feeGrowthGlobal0X128,
-      feeGrowthGlobal1X128,
+      // feeGrowthGlobal0X128,
+      // feeGrowthGlobal1X128,
       event.chainId,
       context
     );
@@ -276,8 +276,8 @@ UniswapV3Pool.Burn.handler(async ({ event, context }) => {
       event.block.timestamp,
       pool,
       poolHourData,
-      feeGrowthGlobal0X128,
-      feeGrowthGlobal1X128,
+      // feeGrowthGlobal0X128,
+      // feeGrowthGlobal1X128,
       event.chainId,
       context
     );
@@ -535,28 +535,28 @@ UniswapV3Pool.Collect.handler(async ({ event, context }) => {
     context.TokenHourData.get(token1HourID),
   ]);
 
-  let feeGrowthGlobal0X128: bigint | undefined = undefined;
-  let feeGrowthGlobal1X128: bigint | undefined = undefined;
+  // let feeGrowthGlobal0X128: bigint | undefined = undefined;
+  // let feeGrowthGlobal1X128: bigint | undefined = undefined;
 
-  if (!poolHourData) {
-    const updatedFeeGrowth = await updateFeeGrowthGlobal(
-      event.srcAddress as Address,
-      event.chainId,
-      event.block.number,
-      pool
-    );
-    feeGrowthGlobal0X128 = updatedFeeGrowth.feeGrowthGlobal0X128;
-    feeGrowthGlobal1X128 = updatedFeeGrowth.feeGrowthGlobal1X128;
-    pool = updatedFeeGrowth.pool;
-  }
+  // if (!poolHourData) {
+  //   const updatedFeeGrowth = await updateFeeGrowthGlobal(
+  //     event.srcAddress as Address,
+  //     event.chainId,
+  //     event.block.number,
+  //     pool
+  //   );
+  //   feeGrowthGlobal0X128 = updatedFeeGrowth.feeGrowthGlobal0X128;
+  //   feeGrowthGlobal1X128 = updatedFeeGrowth.feeGrowthGlobal1X128;
+  //   pool = updatedFeeGrowth.pool;
+  // }
 
   updateUniswapDayData(dayID, factory, uniswapDayData, event.chainId, context);
   updatePoolDayData(
     dayID,
     pool,
     poolDayData,
-    feeGrowthGlobal0X128,
-    feeGrowthGlobal1X128,
+    // feeGrowthGlobal0X128,
+    // feeGrowthGlobal1X128,
     event.chainId,
     context
   );
@@ -564,8 +564,8 @@ UniswapV3Pool.Collect.handler(async ({ event, context }) => {
     event.block.timestamp,
     pool,
     poolHourData,
-    feeGrowthGlobal0X128,
-    feeGrowthGlobal1X128,
+    // feeGrowthGlobal0X128,
+    // feeGrowthGlobal1X128,
     event.chainId,
     context
   );
@@ -684,27 +684,27 @@ UniswapV3Pool.Initialize.handler(async ({ event, context }) => {
     context.PoolHourData.get(hourPoolID),
   ]);
 
-  let feeGrowthGlobal0X128: bigint | undefined = undefined;
-  let feeGrowthGlobal1X128: bigint | undefined = undefined;
+  // let feeGrowthGlobal0X128: bigint | undefined = undefined;
+  // let feeGrowthGlobal1X128: bigint | undefined = undefined;
 
-  if (!poolHourData) {
-    const updatedFeeGrowth = await updateFeeGrowthGlobal(
-      event.srcAddress as Address,
-      event.chainId,
-      event.block.number,
-      pool
-    );
-    feeGrowthGlobal0X128 = updatedFeeGrowth.feeGrowthGlobal0X128;
-    feeGrowthGlobal1X128 = updatedFeeGrowth.feeGrowthGlobal1X128;
-    pool = updatedFeeGrowth.pool;
-  }
+  // if (!poolHourData) {
+  //   const updatedFeeGrowth = await updateFeeGrowthGlobal(
+  //     event.srcAddress as Address,
+  //     event.chainId,
+  //     event.block.number,
+  //     pool
+  //   );
+  //   feeGrowthGlobal0X128 = updatedFeeGrowth.feeGrowthGlobal0X128;
+  //   feeGrowthGlobal1X128 = updatedFeeGrowth.feeGrowthGlobal1X128;
+  //   pool = updatedFeeGrowth.pool;
+  // }
 
   updatePoolDayData(
     dayID,
     pool,
     poolDayData,
-    feeGrowthGlobal0X128,
-    feeGrowthGlobal1X128,
+    // feeGrowthGlobal0X128,
+    // feeGrowthGlobal1X128,
     event.chainId,
     context
   );
@@ -712,8 +712,8 @@ UniswapV3Pool.Initialize.handler(async ({ event, context }) => {
     event.block.timestamp,
     pool,
     poolHourData,
-    feeGrowthGlobal0X128,
-    feeGrowthGlobal1X128,
+    // feeGrowthGlobal0X128,
+    // feeGrowthGlobal1X128,
     event.chainId,
     context
   );
@@ -1032,20 +1032,20 @@ UniswapV3Pool.Mint.handler(async ({ event, context }) => {
       context.TokenHourData.get(token1HourID),
     ]);
 
-    let feeGrowthGlobal0X128: bigint | undefined = undefined;
-    let feeGrowthGlobal1X128: bigint | undefined = undefined;
+    // let feeGrowthGlobal0X128: bigint | undefined = undefined;
+    // let feeGrowthGlobal1X128: bigint | undefined = undefined;
 
-    if (!poolHourData) {
-      const updatedFeeGrowth = await updateFeeGrowthGlobal(
-        event.srcAddress as Address,
-        event.chainId,
-        event.block.number,
-        pool
-      );
-      feeGrowthGlobal0X128 = updatedFeeGrowth.feeGrowthGlobal0X128;
-      feeGrowthGlobal1X128 = updatedFeeGrowth.feeGrowthGlobal1X128;
-      pool = updatedFeeGrowth.pool;
-    }
+    // if (!poolHourData) {
+    //   const updatedFeeGrowth = await updateFeeGrowthGlobal(
+    //     event.srcAddress as Address,
+    //     event.chainId,
+    //     event.block.number,
+    //     pool
+    //   );
+    //   feeGrowthGlobal0X128 = updatedFeeGrowth.feeGrowthGlobal0X128;
+    //   feeGrowthGlobal1X128 = updatedFeeGrowth.feeGrowthGlobal1X128;
+    //   pool = updatedFeeGrowth.pool;
+    // }
 
     updateUniswapDayData(
       dayID,
@@ -1058,8 +1058,8 @@ UniswapV3Pool.Mint.handler(async ({ event, context }) => {
       dayID,
       pool,
       poolDayData,
-      feeGrowthGlobal0X128,
-      feeGrowthGlobal1X128,
+      // feeGrowthGlobal0X128,
+      // feeGrowthGlobal1X128,
       event.chainId,
       context
     );
@@ -1067,8 +1067,8 @@ UniswapV3Pool.Mint.handler(async ({ event, context }) => {
       event.block.timestamp,
       pool,
       poolHourData,
-      feeGrowthGlobal0X128,
-      feeGrowthGlobal1X128,
+      // feeGrowthGlobal0X128,
+      // feeGrowthGlobal1X128,
       event.chainId,
       context
     );
@@ -1464,20 +1464,20 @@ UniswapV3Pool.Swap.handler(async ({ event, context }) => {
     ]);
 
     // Update feeGrowth
-    let feeGrowthGlobal0X128: bigint | undefined = undefined;
-    let feeGrowthGlobal1X128: bigint | undefined = undefined;
+    // let feeGrowthGlobal0X128: bigint | undefined = undefined;
+    // let feeGrowthGlobal1X128: bigint | undefined = undefined;
 
-    if (!_poolHourData) {
-      const updatedFeeGrowth = await updateFeeGrowthGlobal(
-        event.srcAddress as Address,
-        event.chainId,
-        event.block.number,
-        pool
-      );
-      feeGrowthGlobal0X128 = updatedFeeGrowth.feeGrowthGlobal0X128;
-      feeGrowthGlobal1X128 = updatedFeeGrowth.feeGrowthGlobal1X128;
-      pool = updatedFeeGrowth.pool;
-    }
+    // if (!_poolHourData) {
+    //   const updatedFeeGrowth = await updateFeeGrowthGlobal(
+    //     event.srcAddress as Address,
+    //     event.chainId,
+    //     event.block.number,
+    //     pool
+    //   );
+    //   feeGrowthGlobal0X128 = updatedFeeGrowth.feeGrowthGlobal0X128;
+    //   feeGrowthGlobal1X128 = updatedFeeGrowth.feeGrowthGlobal1X128;
+    //   pool = updatedFeeGrowth.pool;
+    // }
 
     let uniswapDayData = updateUniswapDayData(
       dayID,
@@ -1490,8 +1490,8 @@ UniswapV3Pool.Swap.handler(async ({ event, context }) => {
       dayID,
       pool,
       _poolDayData,
-      feeGrowthGlobal0X128,
-      feeGrowthGlobal1X128,
+      // feeGrowthGlobal0X128,
+      // feeGrowthGlobal1X128,
       event.chainId,
       context
     );
@@ -1499,8 +1499,8 @@ UniswapV3Pool.Swap.handler(async ({ event, context }) => {
       event.block.timestamp,
       pool,
       _poolHourData,
-      feeGrowthGlobal0X128,
-      feeGrowthGlobal1X128,
+      // feeGrowthGlobal0X128,
+      // feeGrowthGlobal1X128,
       event.chainId,
       context
     );

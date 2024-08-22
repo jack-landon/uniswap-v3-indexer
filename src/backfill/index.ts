@@ -134,8 +134,8 @@ export async function populateEmptyPools(
       collectedFeesUSD: ZERO_BD,
       feeTier: BigInt(feeTier.toString()),
       tick: undefined,
-      feeGrowthGlobal0X128: ZERO_BI,
-      feeGrowthGlobal1X128: ZERO_BI,
+      // feeGrowthGlobal0X128: ZERO_BI,
+      // feeGrowthGlobal1X128: ZERO_BI,
     };
 
     if (token0 && token1) {
